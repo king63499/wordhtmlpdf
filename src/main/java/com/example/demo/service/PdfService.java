@@ -26,7 +26,7 @@ public class PdfService {
 		userList.add(amy);
 		userList.add(leo);
 
-		variables.put("title", "用户列表");
+		variables.put("title", "hello, 张三");
 		variables.put("userList", userList);
 		
 		return variables;

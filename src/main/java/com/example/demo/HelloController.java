@@ -4,8 +4,8 @@ import com.example.demo.generator.HtmlGenerator;
 import com.example.demo.generator.SimsunFontProvider;
 import com.example.demo.service.PdfService;
 import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.*;
+import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.itextpdf.tool.xml.Pipeline;
 import com.itextpdf.tool.xml.XMLWorker;
 import com.itextpdf.tool.xml.XMLWorkerFontProvider;
@@ -19,8 +19,12 @@ import com.itextpdf.tool.xml.pipeline.css.CSSResolver;
 import com.itextpdf.tool.xml.pipeline.css.CssResolverPipeline;
 import com.itextpdf.tool.xml.pipeline.end.PdfWriterPipeline;
 import com.itextpdf.tool.xml.pipeline.html.*;
+import org.apache.avalon.framework.configuration.Configuration;
+import org.apache.avalon.framework.configuration.ConfigurationException;
+import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.fop.apps.*;
 import org.apache.poi.xwpf.converter.core.FileImageExtractor;
 import org.apache.poi.xwpf.converter.core.FileURIResolver;
 import org.apache.poi.xwpf.converter.xhtml.XHTMLConverter;
@@ -29,8 +33,15 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.jsoup.Jsoup;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.xml.sax.SAXException;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -40,6 +51,74 @@ import java.util.Map;
 @RestController
 public class HelloController {
     private static final String CHARSET_NAME = "UTF-8";
+
+    // configure fopFactory as desired
+    //private final FopFactory fopFactory = FopFactory.newInstance(new File("C:\\Users\\jinchangli\\Downloads\\demo\\demo\\conf\\fop.xconf").toURI());
+    //private final FopFactory fopFactory = FopFactory.newInstance(new File(".").toURI());
+
+
+    /**
+     * Converts an FO file to a PDF file using FOP
+     * @param fo the FO file
+     * @param pdf the target PDF file
+     * @throws IOException In case of an I/O problem
+     * @throws FOPException In case of a FOP problem
+     */
+    public void convertFO2PDF(String fo, OutputStream pdf) throws IOException, SAXException, ConfigurationException {
+
+        OutputStream out = null;
+        DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
+        Configuration cfg = cfgBuilder.buildFromFile(new File("conf/fop.xconf"));
+        FopFactoryBuilder fopFactoryBuilder = new FopFactoryBuilder(new File("conf/fop.xconf").toURI()).setConfiguration(cfg);
+        FopFactory fopFactory = fopFactoryBuilder.build();
+
+        try {
+            FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
+
+            // configure foUserAgent as desired
+
+            // Setup output stream.  Note: Using BufferedOutputStream
+            // for performance reasons (helpful with FileOutputStreams).
+            //out = new FileOutputStream(pdf);
+            out = new BufferedOutputStream(pdf);
+
+            // Construct fop with desired output format
+            Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, out);
+
+            // Setup JAXP using identity transformer
+            TransformerFactory factory = TransformerFactory.newInstance();
+            Transformer transformer = factory.newTransformer(); // identity transformer
+
+            // Setup input stream
+            Source src = new StreamSource(new StringReader(fo));
+
+            // Resulting SAX events (the generated FO) must be piped through to FOP
+            Result res = new SAXResult(fop.getDefaultHandler());
+
+            // Start XSLT transformation and FOP processing
+            transformer.transform(src, res);
+
+            // Result processing
+            FormattingResults foResults = fop.getResults();
+            java.util.List pageSequences = foResults.getPageSequences();
+            for (Object pageSequence : pageSequences) {
+                PageSequenceResults pageSequenceResults = (PageSequenceResults) pageSequence;
+                System.out.println("PageSequence "
+                        + (String.valueOf(pageSequenceResults.getID()).length() > 0
+                        ? pageSequenceResults.getID() : "<no id>")
+                        + " generated " + pageSequenceResults.getPageCount() + " pages.");
+            }
+            System.out.println("Generated " + foResults.getPageCount() + " pages in total.");
+
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+            System.exit(-1);
+        } finally {
+            out.close();
+        }
+    }
+
+
 
     @RequestMapping("/hello")
     public void index(HttpServletResponse response) throws IOException {
@@ -54,7 +133,7 @@ public class HelloController {
         PdfService ps = new PdfService();
         Map<String, Object> content = ps.getContent();
         try {
-            String templateHtml = HtmlGenerator.generate("mytemplate.html",
+            String templateHtml = HtmlGenerator.generate("webTemplate.html",
                     content);
             generatePdf(templateHtml, out);
         } catch (Exception e) {
@@ -65,16 +144,165 @@ public class HelloController {
         }
     }
 
-    @RequestMapping("/hello2")
-    public void hello2(HttpServletResponse response) throws IOException {
-        Document document = new Document();
+    @RequestMapping("hello6")
+    public void hello6(HttpServletResponse response) throws IOException {
+        response.setCharacterEncoding(CHARSET_NAME);
+        OutputStream out = response.getOutputStream();
+        response.setContentType("application/pdf");
+        response.addHeader(
+                "Content-Disposition",
+                "attachment; filename="
+                        + String.format("%s.pdf",
+                        Long.toString(System.currentTimeMillis())));
+        PdfService ps = new PdfService();
+        Map<String, Object> content = ps.getContent();
+        try {
+            String templateHtml = HtmlGenerator.generate("helloworld.fo",
+                    content);
+
+            convertFO2PDF(templateHtml, out);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            out.flush();
+            out.close();
+        }
+    }
+
+
+
+    /**
+     *
+     */
+    @RequestMapping("/hello5")
+    public void hello5(HttpServletResponse response) throws IOException {
+        Document document = new Document(PageSize.A4,70,70,36,36);
         try {
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("HelloWorld.pdf"));
-            BaseFont baseFont = BaseFont.createFont("SIMSUN.TTC"+",1",BaseFont.IDENTITY_H,BaseFont.NOT_EMBEDDED);
-//this.getClass().getResource("/").getPath() + "font/SIMSUN.TTC";
-            Font font = new Font(baseFont);
+            BaseFont baseFont = BaseFont.createFont("simfang.ttf",BaseFont.IDENTITY_H,BaseFont.NOT_EMBEDDED);
             document.open();
-            document.add(new Paragraph("这是一个中文oooo",font));
+            Font font = new Font(baseFont,20);
+
+            writer.setPageEvent(new PdfPageEventHelper() {
+
+                public void onEndPage(PdfWriter writer, Document document) {
+
+                    PdfContentByte cb = writer.getDirectContent();
+                    cb.saveState();
+
+                    cb.beginText();
+                    BaseFont bf = null;
+                    try {
+                        bf = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.WINANSI, BaseFont.EMBEDDED);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    cb.setFontAndSize(bf, 10);
+                    Font font = new Font(bf,20);
+
+                    //Header
+                    float x = document.top(-20);
+
+                    //中
+                    /*cb.showTextAligned(PdfContentByte.ALIGN_CENTER,
+                            new Phrase(),
+                            (document.right() + document.left())/2,
+                            x, 0);*/
+
+
+
+                    //Footer
+                    float y = document.bottom(-20);
+
+                    //中
+                    cb.showTextAligned(PdfContentByte.ALIGN_CENTER,
+                            writer.getPageNumber()+"",
+                            (document.right() + document.left())/2,
+                            y, 0);
+
+                    cb.endText();
+
+
+                    ColumnText.showTextAligned(cb,Element.ALIGN_CENTER, new Paragraph(new Chunk(new LineSeparator(font))),
+                            (document.right() + document.left())/2,
+                            x,0
+                    );
+
+//code skeleton to write page header
+                    PdfPTable tbl = new PdfPTable(3);
+                    tbl.addCell("1st cell");
+                    tbl.addCell("2nd cell");
+                    tbl.addCell("3rd cell");
+                    float x1 = document.leftMargin();
+                    float hei =20.0F; //custom method that return header's height
+                    //align bottom between page edge and page margin
+                    float y1 = document.top() + hei;
+                    tbl.setWidthPercentage(100F);
+                    //write the table
+                    tbl.writeSelectedRows(0, -1, x1, y1, writer.getDirectContent());
+
+
+
+                    cb.restoreState();
+                }
+            });
+
+
+
+            Paragraph p = new Paragraph("§1 重要提示",font);
+            Paragraph p1 = new Paragraph("201*年*年度投资报告",font);
+            Paragraph p3 = new Paragraph();
+            Paragraph p4 = new Paragraph("金额单位：万元",font);
+            LineSeparator ls = new LineSeparator(font);
+            ls.setPercentage(50.0F);
+            ls.setAlignment(Element.ALIGN_LEFT);
+            p3.add(new Chunk(ls));
+
+            //LineSeparator ls2 = new LineSeparator(font);
+            //ls2.drawLine(writer.getDirectContent(), document.right(),document.left(),0);
+            //p.add(ls2);
+
+            //p3.setAlignment(Element.ALIGN_LEFT);
+            p4.setAlignment(Element.ALIGN_RIGHT);
+            //p.setAlignment(1);
+            //p1.setAlignment(1);
+            //Chunk c = new Chunk("基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金",font);
+            document.add(p);
+            //document.add(c);
+            document.add(p1);
+            document.newPage();
+
+            document.add(p3);
+            document.add(p4);
+
+            document.close();
+            writer.close();
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    @RequestMapping("/hello2")
+    public void hello2(HttpServletResponse response) throws IOException {
+        Document document = new Document(PageSize.A4,70,70,36,36);
+        try {
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream("HelloWorld.pdf"));
+            BaseFont baseFont = BaseFont.createFont("simfang.ttf",BaseFont.IDENTITY_H,BaseFont.NOT_EMBEDDED);
+
+            Font font = new Font(baseFont,4);
+            document.open();
+            Paragraph p = new Paragraph("基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金",font);
+            Paragraph p1 = new Paragraph("201*年*年度投资报告",font);
+
+            //p.setAlignment(1);
+            //p1.setAlignment(1);
+            //Chunk c = new Chunk("基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金基金",font);
+            document.add(p);
+            //document.add(c);
+            document.add(p1);
             document.close();
             writer.close();
         } catch (DocumentException e) {
@@ -99,7 +327,7 @@ public class HelloController {
                     @Override
                     public Font getFont(String fontname, String encoding,
                                         float size, final int style) {
-                        Font font = null;
+                        /*Font font = null;
                         if (fontname == null) {
                             //字体
                             String fontCn = null;
@@ -123,7 +351,14 @@ public class HelloController {
                             }
 
                         }
-                        return font;
+                        return font;*/
+
+
+                        if (fontname == null) {
+                            // 操作系统需要有该字体, 没有则需要安装; 当然也可以将字体放到项目中， 再从项目中读取
+                            fontname = "SimSun";
+                        }
+                        return super.getFont(fontname, encoding, size, style);
                     }
                 })) {
             @Override
@@ -249,7 +484,9 @@ public class HelloController {
         PdfWriter writer = PdfWriter.getInstance(document,new FileOutputStream("abcd.pdf"));
         document.open();
         FontProvider fp = new SimsunFontProvider();
+        //XMLWorkerHelper.getInstance().parseXHtml(writer,document,new FileInputStream("abcdef.html"),getClass().getClassLoader().getResourceAsStream("static/css/pdf.css"),Charset.forName("UTF-8"),fp);
         XMLWorkerHelper.getInstance().parseXHtml(writer,document,new FileInputStream("abcdef.html"),null,Charset.forName("UTF-8"),fp);
+
         document.close();
     }
 
@@ -294,7 +531,9 @@ public class HelloController {
                 FileOutputStream fos = null;
                 BufferedWriter bw = null;
                 org.jsoup.nodes.Document doc = Jsoup.parse(content);
+
                 //删除DIV
+                /*
                 String style = doc.body().attr("style");
                 if(StringUtils.isNotEmpty(style) && style.indexOf("width") != -1){
                     doc.body().attr("style","");
@@ -306,7 +545,7 @@ public class HelloController {
                     if(StringUtils.isNotEmpty(style) && style.indexOf("width") != -1){
                         div.attr("style","");
                     }
-                }
+                }*/
 
 
                 content = doc.html();
