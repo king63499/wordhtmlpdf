@@ -84,6 +84,9 @@ the location of this file.
            <font-triplet name="simfangbd" style="normal" weight="normal"/>
            <font-triplet name="simfangbd" style="normal" weight="bold"/>
         </font>
+        <font metrics-url="calibri.xml" kerning="yes" embed-url="calibri.ttf">
+           <font-triplet name="calibri" style="normal" weight="normal"/>
+        </font>
 
         <!-- auto-detect fonts -->
         <auto-detect/>

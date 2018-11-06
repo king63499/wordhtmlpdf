@@ -18,16 +18,10 @@ public class PdfService {
 
 		List<User> userList = new ArrayList<User>();
 
-		User tom = new User("张三", 19, 1);
-		User amy = new User("Amy", 28, 0);
-		User leo = new User("Leo", 23, 1);
+		User tom = new User("基金A", "类型A", "NO123456");
 
-		userList.add(tom);
-		userList.add(amy);
-		userList.add(leo);
-
-		variables.put("title", "hello, 张三");
-		variables.put("userList", userList);
+		//variables.put("title", "hello, 张三");
+		variables.put("user", tom);
 		
 		return variables;
 	}

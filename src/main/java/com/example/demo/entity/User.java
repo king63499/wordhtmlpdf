@@ -3,21 +3,15 @@ package com.example.demo.entity;
 public class User {
 
 	private String name;
-	private int age;
-	private int sex;
+	private String type;
+	private String no;
 
-	/**
-	 * Constructor with all fields
-	 * 
-	 * @param name
-	 * @param age
-	 * @param sex
-	 */
-	public User(String name, int age, int sex) {
+
+	public User(String name, String type, String no) {
 		super();
 		this.name = name;
-		this.age = age;
-		this.sex = sex;
+		this.type = type;
+		this.no = no;
 	}
 
 	public String getName() {
@@ -28,20 +22,19 @@ public class User {
 		this.name = name;
 	}
 
-	public int getAge() {
-		return age;
+	public String getType() {
+		return type;
 	}
 
-	public void setAge(int age) {
-		this.age = age;
+	public void setType(String type) {
+		this.type = type;
 	}
 
-	public int getSex() {
-		return sex;
+	public String getNo() {
+		return no;
 	}
 
-	public void setSex(int sex) {
-		this.sex = sex;
+	public void setNo(String no) {
+		this.no = no;
 	}
-
 }

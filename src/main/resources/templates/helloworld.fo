@@ -18,13 +18,13 @@
 <!-- $Id$ -->
 <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format" font-family="simfang">
   <fo:layout-master-set>
-    <fo:simple-page-master master-name="simpleA4" page-height="29.7cm" page-width="21cm" margin-top="1.56cm" margin-bottom="2.54cm" margin-left="3.18cm" margin-right="3.18cm">
+    <fo:simple-page-master master-name="simpleA4" page-height="29.7cm" page-width="21cm" margin-top="2.54cm" margin-bottom="2.54cm" margin-left="3.18cm" margin-right="3.18cm">
       <fo:region-body/>
     </fo:simple-page-master>
-    <fo:simple-page-master master-name="simpleA4FooterHeader" page-height="29.7cm" page-width="21cm" margin-top="1.56cm" margin-bottom="2.54cm" margin-left="3.18cm" margin-right="3.18cm">
-      <fo:region-body margin-top="9.8mm"/>
-      <fo:region-before/>
-      <fo:region-after/>
+    <fo:simple-page-master master-name="simpleA4FooterHeader" page-height="29.7cm" page-width="21cm" margin-top="1.56cm" margin-bottom="2.04cm" margin-left="3.18cm" margin-right="3.18cm">
+      <fo:region-body margin-top="9.8mm" margin-bottom="5mm"/>
+      <fo:region-before extent="9.8mm"/>
+      <fo:region-after extent="5mm"/>
     </fo:simple-page-master>
   </fo:layout-master-set>
   <fo:page-sequence master-reference="simpleA4">
@@ -37,7 +37,7 @@
       <fo:block font-size="16pt" text-align="center" margin="8pt" >201*年*月*日</fo:block>
     </fo:flow>
   </fo:page-sequence>
-  <fo:page-sequence master-reference="simpleA4FooterHeader">
+  <fo:page-sequence master-reference="simpleA4FooterHeader" initial-page-number="2">
 
     <fo:static-content flow-name="xsl-region-before">
 
@@ -48,149 +48,449 @@
         </fo:block>
     </fo:static-content>
 
+    <fo:static-content flow-name="xsl-region-after">
+
+      <fo:block text-align="center" border-style="solid" border-width="0mm" font-size="9pt" font-family="calibri">
+        <fo:page-number/>
+      </fo:block>
+    </fo:static-content>
+
     <fo:static-content flow-name="xsl-footnote-separator">
       <fo:block>
-        <fo:leader leader-pattern="rule" leader-length="50%"
-                   rule-style="dashed" rule-thickness="0.5pt"/>
+        <fo:leader leader-pattern="rule"
+                   rule-thickness="0.5pt"
+                   leader-length="30%" />
       </fo:block>
     </fo:static-content>
 
     <fo:flow flow-name="xsl-region-body">
       <fo:block space-after="5.4mm"></fo:block>
-
-
-
-
-
-      <fo:block text-align="center">
-
-        <fo:footnote>
-          <fo:inline >§3基金运营情况222<fo:inline font-size="6pt" vertical-align="super">1</fo:inline></fo:inline>
-          <fo:footnote-body>
-            <!-- fo:block text-align="left">
-              <fo:leader leader-pattern="rule"
-                         rule-thickness="0.5pt"
-                         leader-length="30%" />
-            </fo:block -->
-            <fo:block text-align="left" font-size="7.5pt">
-              2. 请根据基金所投标的具体形式选择填写表3.1、3.2或3.3。
-            </fo:block>
-          </fo:footnote-body>
-        </fo:footnote>
-
-      </fo:block>
-
-
-
-
       <fo:block text-align="center" line-height="13.5mm" border-style="solid" border-width="0mm">§1 重要提示</fo:block>
-      <fo:block text-indent="2em"  line-height="24pt">
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证。基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证.
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证.
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证.
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证.
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
-        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证
+      <fo:block text-indent="2em"  line-height="22pt">
+        基金管理人保证本报告所载资料不存在虚假记载、误导性陈述或重大遗漏，并对其内容的真实性、准确性和完整性予以保证。
       </fo:block>
-      <fo:block text-indent="2em"  line-height="24pt">
+      <fo:block text-indent="2em"  line-height="22pt">
         基金管理人承诺以诚实信用、勤勉尽责的原则管理和运用基金财产，但不保证基金一定盈利。
       </fo:block>
-      <fo:block text-indent="2em" font-size="12pt" line-height="24pt">
+      <fo:block text-indent="2em"  line-height="22pt">
         基金的过往业绩并不代表其未来表现，投资者在作出投资决策前应仔细阅读本基金的《基金合同》及相关文件。
       </fo:block>
-      <fo:block text-indent="2em" font-size="12pt" line-height="24pt">
+      <fo:block text-indent="2em"  line-height="22pt">
         本报告中财务资料未经审计。本报告期自201X年1月1日起至201X年12月31日止。
       </fo:block>
-      <fo:block space-after="24pt"></fo:block>
+      <fo:block space-after="22pt"></fo:block>
 
       <!-- 产品概况-->
       <fo:block text-align="center" line-height="13.5mm" >§2 基金产品概况</fo:block>
-      <fo:block text-align="right">金额单位：万元</fo:block>
-      <fo:block text-align="left">2.1基金基本情况</fo:block>
+      <fo:block text-align="right" line-height="10.6mm" >金额单位：万元</fo:block>
+      <fo:block text-align="left" ><fo:inline padding-left="2mm">2.1基金基本情况</fo:inline></fo:block>
 
       <fo:table border-collapse="collapse" table-layout="fixed" width="100%">
         <fo:table-column column-width="50%"/>
         <fo:table-column column-width="50%"/>
 
         <fo:table-body>
-          <fo:table-row>
-            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid">
-              <fo:block text-align="center">
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
                 基金名称
               </fo:block>
             </fo:table-cell>
-            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid">
-              <fo:block text-align="center">
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                ${user.name}
               </fo:block>
             </fo:table-cell>
           </fo:table-row>
           <fo:table-row>
-            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid">
-              <fo:block text-align="center">
-                基金注册地
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                基金类型
               </fo:block>
             </fo:table-cell>
-            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid">
-              <fo:block text-align="center">
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                ${user.type}
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                基金编号
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                ${user.no}
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                基金注册地<fo:inline font-size="8pt">（注1）</fo:inline>
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                基金成立日期
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                基金到期日期
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                认缴金额（如有）
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                实缴金额
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                估值方法
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                期末总资产
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
+                期末净资产
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" line-height="9.5mm" >
               </fo:block>
             </fo:table-cell>
           </fo:table-row>
         </fo:table-body>
       </fo:table>
-      <fo:block font-size="10.5pt">
+      <fo:block font-size="10.5pt" >
+        <fo:inline padding-left="2mm">
         注1：公司型，合伙型基金的注册地应填写工商注册地，除此之外的私募股权投资基金，基金注册地填写“不适用”.
+        </fo:inline>
       </fo:block>
-      <fo:block text-align="center">
 
+      <fo:block text-align="left"><fo:inline padding-left="2mm">2.2基金产品说明</fo:inline></fo:block>
+      <fo:table border-collapse="collapse" table-layout="fixed" width="100%">
+        <fo:table-column column-width="50%"/>
+        <fo:table-column column-width="50%"/>
+
+        <fo:table-body>
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+                投资目标
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+                投资策略
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+                投资范围
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+                其他需说明事项
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+        </fo:table-body>
+      </fo:table>
+      <fo:block text-align="left" ><fo:inline padding-left="2mm">2.3基金管理人和基金托管人</fo:inline></fo:block>
+
+      <fo:block text-align="left" ><fo:inline padding-left="2mm">2.3.1基金管理人介绍</fo:inline></fo:block>
+      <fo:table border-collapse="collapse" table-layout="fixed" width="100%">
+        <fo:table-column column-width="13.2%"/>
+        <fo:table-column column-width="16.5%"/>
+        <fo:table-column column-width="70.3%"/>
+        <fo:table-body>
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-columns-spanned="2">
+              <fo:block text-align="left" >
+                基金管理人
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-rows-spanned="3">
+              <fo:block text-align="left" >
+                信息披露负责人
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+                姓名
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+                联系电话
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+                电子邮箱
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-columns-spanned="2">
+              <fo:block text-align="left" >
+                注册地址
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-columns-spanned="2">
+              <fo:block text-align="left" >
+                办公地址
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-columns-spanned="2">
+              <fo:block text-align="left" >
+                邮政编码
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-columns-spanned="2">
+              <fo:block text-align="left" >
+                法定代表人
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+        </fo:table-body>
+      </fo:table>
+
+      <fo:block text-align="left" ><fo:inline padding-left="2mm">2.3.3基金托管人介绍</fo:inline></fo:block>
+      <fo:table border-collapse="collapse" table-layout="fixed" width="100%">
+        <fo:table-column column-width="13.2%"/>
+        <fo:table-column column-width="16.5%"/>
+        <fo:table-column column-width="70.3%"/>
+        <fo:table-body>
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-columns-spanned="2">
+              <fo:block text-align="left" >
+                基金管理人
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-rows-spanned="3">
+              <fo:block text-align="left" >
+                信息披露负责人
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+                姓名
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+                联系电话
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+                电子邮箱
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-columns-spanned="2">
+              <fo:block text-align="left" >
+                注册地址
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-columns-spanned="2">
+              <fo:block text-align="left" >
+                办公地址
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-columns-spanned="2">
+              <fo:block text-align="left" >
+                邮政编码
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+          <fo:table-row >
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm" number-columns-spanned="2">
+              <fo:block text-align="left" >
+                法定代表人
+              </fo:block>
+            </fo:table-cell>
+            <fo:table-cell border-color="black" border-width="0.5pt" border-style="solid" padding-left="2mm">
+              <fo:block text-align="left" >
+              </fo:block>
+            </fo:table-cell>
+          </fo:table-row>
+        </fo:table-body>
+      </fo:table>
+
+
+
+      <fo:block text-align="center">
         <fo:footnote>
           <fo:inline >§3基金运营情况<fo:inline font-size="6pt" vertical-align="super">1</fo:inline></fo:inline>
           <fo:footnote-body>
-            <!-- fo:block text-align="left">
-              <fo:leader leader-pattern="rule"
-                         rule-thickness="0.5pt"
-                         leader-length="30%" />
-            </fo:block -->
             <fo:block text-align="left" font-size="7.5pt">
               1. 请根据基金所投标的具体形式选择填写表3.1、3.2或3.3。
             </fo:block>
           </fo:footnote-body>
         </fo:footnote>
-
       </fo:block>
 
     </fo:flow>

@@ -96,8 +96,8 @@ public class DemoApplication {
 		/*String[] parameters = {
 				"-d",
 				"-ttcname",
-				"simfangbd",
-				"simfangbd.ttf", "simfangbd.xml", };
+				"calibri",
+				"calibri.ttf", "calibri.xml", };
 
 
 		TTFReader.main(parameters);*/
