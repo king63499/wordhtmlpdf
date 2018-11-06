@@ -23,6 +23,8 @@ TTFReader.main(parameters);
 <b>参考链接</b>
 
 https://xmlgraphics.apache.org/
+
 http://www.w3school.com.cn/xslfo/xslfo_pages.asp 
+
 这是fo参考教程，尤其要注意页面布局这一块，这个跟word的布局不太一样。所以fo文件的margin值跟word也不完全一样。
 
