@@ -20,7 +20,7 @@ TTFReader.main(parameters);
 
 <b>其他</b>
 
-6.链接只有/hello6可用，其他都是尝试各种方案的半成品。itext需要熟悉大量专有API，html转pdf效果不那么理想。费劲做出HTML以后能否原样转成pdf是个问题。
+6.链接只有/hello6可用，其他都是尝试各种方案的半成品。itext需要熟悉专有API，html转pdf效果不那么理想。做出HTML以后能否原样转成pdf还是个问题。
 相对来说FOP只需要了解简单的xsl-fo语法就可以，并且表格，字体，页眉页脚，脚注等功能都能实现。 
 
 7.打包启动的时候要加上-Dfile.encoding=utf-8 选项，暂时还不知道如何程序上解决这个问题。
@@ -28,6 +28,8 @@ TTFReader.main(parameters);
 <b>参考链接</b>
 
 https://xmlgraphics.apache.org/
+
+可以下载编译好的版本，里面有很多例子可以参考。
 
 http://www.w3school.com.cn/xslfo/xslfo_pages.asp 
 
